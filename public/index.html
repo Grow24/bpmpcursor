@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PBMP · Developer Workbench</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">◆</span>
+        <div>
+          <h1>PBMP Developer Workbench</h1>
+          <p>Orchestrator · Cursor is just a pluggable tool</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="userbox">
+          <label>Logged in as</label>
+          <select id="userSelect"></select>
+          <span id="userRole" class="role-badge"></span>
+        </div>
+        <div class="pipeline">
+          Requirements → Analysis → Design → Pseudocode → <b>Coding</b> → Testing → Deployment
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- Left: task list -->
+      <aside class="sidebar">
+        <h2>Coding Tasks</h2>
+        <div id="taskList" class="task-list"></div>
+      </aside>
+
+      <!-- Right: task detail -->
+      <section class="detail">
+        <div id="detailEmpty" class="empty">← Select a task</div>
+
+        <div id="detailCard" class="detail-card hidden">
+          <div class="detail-head">
+            <span id="dModule" class="tag"></span>
+            <span id="dLang" class="tag tag-alt"></span>
+            <h2 id="dTitle"></h2>
+            <p id="dReq" class="muted"></p>
+          </div>
+
+          <!-- Lifecycle pipeline (stage gates) -->
+          <h3>Development Lifecycle <span class="hint">(each stage unlocks the next when approved)</span></h3>
+          <div id="lifecycle" class="lifecycle"></div>
+
+          <!-- Selected stage artifact -->
+          <div id="stagePanel" class="stage-panel"></div>
+
+          <div class="grid">
+            <div class="info"><span>Business Object</span><b id="dObj"></b></div>
+            <div class="info"><span>UML Class</span><b id="dUml"></b></div>
+            <div class="info"><span>API</span><b id="dApi"></b></div>
+            <div class="info"><span>Security</span><b id="dSec"></b></div>
+          </div>
+
+          <!-- Pre-coding checklist (Definition of Ready) -->
+          <h3>Pre-Coding Checklist <span class="hint">(Definition of Ready)</span></h3>
+          <ul id="checklist" class="checklist"></ul>
+
+          <!-- Coding actions -->
+          <div class="launch-row">
+            <button id="launchBtn" class="launch-btn" disabled>Open in Cursor</button>
+            <button id="validateBtn" class="validate-btn" disabled>Validate &amp; Complete</button>
+            <button id="deployBtn" class="deploy-btn" disabled>🚀 Deploy to Production</button>
+            <span id="launchHint" class="muted"></span>
+          </div>
+
+          <div id="result" class="result hidden">
+            <h4 id="resultTitle"></h4>
+            <p id="resultMsg"></p>
+            <code id="resultCmd"></code>
+            <div id="openOptions" class="open-options"></div>
+            <div id="gitHookBox" class="githook"></div>
+            <div id="engineBox" class="engine"></div>
+            <div id="checksBox" class="checks"></div>
+            <pre id="deployLog" class="deploy-log hidden"></pre>
+            <details id="previewWrap">
+              <summary>Generated Cursor context file (.cursor/rules/pbmp-context.mdc)</summary>
+              <pre id="resultPreview"></pre>
+            </details>
+          </div>
+
+          <!-- Audit trail -->
+          <h3>Audit Trail <span class="hint">(governance log)</span></h3>
+          <ul id="audit" class="audit"></ul>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+# Dependencies (this project is zero-dependency, but just in case)
+node_modules/
+
+# Generated at runtime by the workbench
+releases/
+projects/*/.cursor/rules/pbmp-context.mdc
+
+# Git repos that the workbench creates inside sample projects
+projects/*/.git/
+
+# OS / editor noise
+.DS_Store
+*.log
+npm-debug.log*
+
+# Local env files
+.env
+.env.local
