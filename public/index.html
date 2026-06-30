@@ -24,6 +24,11 @@
         <div class="pipeline">
           Requirements → Analysis → Design → Pseudocode → <b>Coding</b> → Testing → Deployment
         </div>
+        <div class="local-path-box" title="Required once so Open in Cursor works from Zeabur">
+          <label for="localProjectsRoot">Local projects folder</label>
+          <input id="localProjectsRoot" type="text" placeholder="/home/you/bpmpcursor/projects" />
+          <button type="button" id="saveLocalPath" class="save-path-btn">Save</button>
+        </div>
       </div>
     </header>
 
@@ -93,6 +98,19 @@
         </div>
       </section>
     </main>
+
+    <div id="pathModal" class="path-modal hidden">
+      <div class="path-modal-card">
+        <h3>Open in Cursor — one-time setup</h3>
+        <p>Zeabur runs in the cloud, so Cursor opens a folder on <b>your computer</b>. Enter where this repo’s projects live locally:</p>
+        <input id="pathModalInput" type="text" placeholder="/home/you/bpmpcursor/projects" />
+        <p class="path-modal-hint">Example: <code>/home/bappu/bpmpcursor/projects</code></p>
+        <div class="path-modal-actions">
+          <button type="button" id="pathModalCancel" class="copy-btn">Cancel</button>
+          <button type="button" id="pathModalSave" class="launch-btn">Save &amp; Open in Cursor</button>
+        </div>
+      </div>
+    </div>
 
     <script src="/app.js"></script>
   </body>

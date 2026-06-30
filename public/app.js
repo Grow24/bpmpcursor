@@ -26,6 +26,119 @@ function post(url, body) {
   }).then(async (r) => ({ ok: r.ok, data: await r.json() }));
 }
 
+let pendingLaunchData = null;
+const LOCAL_ROOT_KEY = "pbmpProjectsRoot";
+
+function getLocalProjectsRoot() {
+  return (localStorage.getItem(LOCAL_ROOT_KEY) || "").trim().replace(/\/+$/, "");
+}
+
+function saveLocalProjectsRoot(path) {
+  const cleaned = (path || "").trim().replace(/\/+$/, "");
+  if (cleaned) localStorage.setItem(LOCAL_ROOT_KEY, cleaned);
+  else localStorage.removeItem(LOCAL_ROOT_KEY);
+  const input = $("localProjectsRoot");
+  if (input) input.value = cleaned;
+  return cleaned;
+}
+
+function localProjectPath(folder) {
+  const root = getLocalProjectsRoot();
+  if (!root) return "";
+  return `${root}/${folder}`;
+}
+
+function openFolderInCursor(absPath) {
+  const normalized = absPath.replace(/\\/g, "/");
+  const uri = normalized.startsWith("/")
+    ? `vscode://file${normalized}`
+    : `vscode://file/${normalized}`;
+  window.location.href = uri;
+}
+
+function autoDownloadZip(url, folder) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${folder}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function setupLocalPathControls() {
+  const input = $("localProjectsRoot");
+  const saveBtn = $("saveLocalPath");
+  if (input) input.value = getLocalProjectsRoot();
+
+  if (saveBtn) {
+    saveBtn.onclick = () => {
+      const saved = saveLocalProjectsRoot(input.value);
+      if (saved) alert("Saved. Next time you click Open in Cursor, that folder will open in Cursor.");
+      else alert("Enter a folder path first.");
+    };
+  }
+
+  const modal = $("pathModal");
+  const modalInput = $("pathModalInput");
+  const modalSave = $("pathModalSave");
+  const modalCancel = $("pathModalCancel");
+
+  if (modalCancel) {
+    modalCancel.onclick = () => {
+      modal.classList.add("hidden");
+      pendingLaunchData = null;
+    };
+  }
+
+  if (modalSave) {
+    modalSave.onclick = () => {
+      const root = saveLocalProjectsRoot(modalInput.value);
+      if (!root) return alert("Enter your local projects folder path.");
+      modal.classList.add("hidden");
+      if (pendingLaunchData) {
+        finishCloudLaunch(pendingLaunchData);
+        pendingLaunchData = null;
+      }
+    };
+  }
+}
+
+function promptLocalPathIfNeeded(data) {
+  const root = getLocalProjectsRoot();
+  if (root) return false;
+  pendingLaunchData = data;
+  const modal = $("pathModal");
+  const modalInput = $("pathModalInput");
+  if (modalInput) modalInput.value = "";
+  modal.classList.remove("hidden");
+  modalInput?.focus();
+  return true;
+}
+
+function finishCloudLaunch(data) {
+  const projectPath = localProjectPath(data.folder);
+  if (!projectPath) return;
+
+  openFolderInCursor(projectPath);
+  autoDownloadZip(data.downloadUrl, data.folder);
+
+  const el = $("openOptions");
+  if (el) {
+    el.innerHTML = `
+      <div class="open-opt">
+        <div class="ttl">Opening in Cursor…</div>
+        <small>Cursor should open: <code>${projectPath}</code></small>
+        <div class="cmd-row" style="margin-top:8px">
+          <code class="cmd" id="openCmd">cursor "${projectPath}"</code>
+          <button class="copy-btn" id="copyOpen">Copy</button>
+        </div>
+        <button type="button" class="btn-link" id="retryOpen" style="margin-top:10px">🖱️ Open in Cursor again</button>
+        <small style="display:block;margin-top:8px">A ZIP was also downloaded with the latest PBMP context. If Cursor did not open, allow the <b>vscode://</b> link in your browser, or run the command above in terminal.</small>
+      </div>`;
+    wireCopy("copyOpen", "openCmd");
+    $("retryOpen").onclick = () => openFolderInCursor(projectPath);
+  }
+}
 let tasks = [];
 let activeId = null;
 let selectedStage = null;
@@ -271,6 +384,9 @@ async function doLaunch(id) {
       $("gitHookBox").innerHTML = `<b>🪝 Git hook not installed:</b> ${data.gitHook.error || "unknown"}`;
     }
     $("resultPreview").textContent = data.contextPreview;
+    if (!data.isLocal) {
+      if (!promptLocalPathIfNeeded(data)) finishCloudLaunch(data);
+    }
     tasks = await api.list();
   }
   renderDetail();
@@ -298,7 +414,7 @@ function renderOpenOptions(data) {
 
   el.innerHTML = `
     <div class="open-opt">
-      <div class="ttl">A) ZIP <span>(recommended — works on Zeabur/cloud)</span></div>
+      <div class="ttl">A) ZIP <span>(if Cursor did not open automatically)</span></div>
       <a class="dl-btn" href="${data.downloadUrl}" download>⬇ Download ${data.folder}.zip</a>
       <small>Extract the ZIP, open a terminal in that folder, then run:</small>
       <div class="cmd-row" style="margin-top:8px">
@@ -315,7 +431,7 @@ function renderOpenOptions(data) {
       <small>Run this in your terminal. It clones the repo and opens only this project in Cursor.</small>
     </div>
     <div class="open-opt note-box">
-      <small><b>Note:</b> The old one-click deep link does not work — Cursor only supports prompt/command/rule deeplinks, not opening folders from a cloud server path. Use ZIP or Git above.</small>
+      <small><b>Tip:</b> Set your <b>Local projects folder</b> in the top bar (e.g. <code>/home/bappu/bpmpcursor/projects</code>). Then <b>Open in Cursor</b> will open the task folder directly in Cursor.</small>
     </div>`;
 
   wireCopy("copyClone", "cloneCmd");
@@ -434,6 +550,7 @@ async function init() {
   users = meta.users || [];
   if (users.length) currentUser = users[0];
   setupUserSelector();
+  setupLocalPathControls();
   tasks = await api.list();
   renderList();
 }

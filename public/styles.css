@@ -67,6 +67,69 @@ body {
   border: 1px solid var(--border);
 }
 .pipeline b { color: var(--accent); }
+.local-path-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.local-path-box label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.local-path-box input {
+  min-width: 220px;
+  max-width: 320px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.save-path-btn {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.save-path-btn:hover { border-color: var(--accent); }
+.path-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.path-modal.hidden { display: none; }
+.path-modal-card {
+  width: min(520px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+}
+.path-modal-card h3 { margin-bottom: 10px; }
+.path-modal-card p { color: var(--muted); font-size: 13.5px; line-height: 1.5; margin-bottom: 12px; }
+.path-modal-card input {
+  width: 100%;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+.path-modal-hint { font-size: 12px !important; margin-top: 8px !important; }
+.path-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
 
 /* "Open in Cursor" options (deep link / git clone / zip download) */
 .open-options { margin: 12px 0; display: flex; flex-direction: column; gap: 12px; }
