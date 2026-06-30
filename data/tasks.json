@@ -17,25 +17,106 @@
     "securityNotes": "Only 'accountant' and 'admin' roles can create invoices. Validate amount fields server-side.",
     "codingStandards": "PSR-12 for PHP, ESLint Airbnb for React. No business logic in the frontend.",
     "stages": [
-      { "key": "requirements", "name": "Business Requirements", "status": "approved", "approvedBy": "ba.rekha", "approvedAt": "2026-06-20T10:00:00Z", "artifact": "Customers need to be able to create invoices. Line items, tax %, grand total." },
-      { "key": "analysis", "name": "Business Analysis", "status": "active", "approvedBy": null, "approvedAt": null, "artifact": "Invoice is a business object; linked to Customer; the tax module will be reused." },
-      { "key": "design", "name": "Solution Design", "status": "locked", "approvedBy": null, "approvedAt": null, "artifact": "UML: Invoice 1..* InvoiceLineItem. REST: POST /api/v1/invoices." },
-      { "key": "pseudocode", "name": "Pseudocode", "status": "locked", "approvedBy": null, "approvedAt": null, "artifact": "validate(input) -> calc(lineItems) -> applyTax() -> save() -> return invoiceId" },
-      { "key": "coding", "name": "Coding (React/PHP/Kotlin)", "status": "locked", "approvedBy": null, "approvedAt": null, "artifact": "Code will be written in Cursor (with the PBMP context). A sample src/Invoice.php exists." },
-      { "key": "testing", "name": "Testing", "status": "locked", "approvedBy": null, "approvedAt": null, "artifact": "Unit + integration tests; tax calculation edge cases." },
-      { "key": "deployment", "name": "Deployment", "status": "locked", "approvedBy": null, "approvedAt": null, "artifact": "Staging -> approval -> production release (deploy.sh)." }
+      {
+        "key": "requirements",
+        "name": "Business Requirements",
+        "status": "approved",
+        "approvedBy": "ba.rekha",
+        "approvedAt": "2026-06-20T10:00:00Z",
+        "artifact": "Customers need to be able to create invoices. Line items, tax %, grand total."
+      },
+      {
+        "key": "analysis",
+        "name": "Business Analysis",
+        "status": "active",
+        "approvedBy": null,
+        "approvedAt": null,
+        "artifact": "Invoice is a business object; linked to Customer; the tax module will be reused."
+      },
+      {
+        "key": "design",
+        "name": "Solution Design",
+        "status": "locked",
+        "approvedBy": null,
+        "approvedAt": null,
+        "artifact": "UML: Invoice 1..* InvoiceLineItem. REST: POST /api/v1/invoices."
+      },
+      {
+        "key": "pseudocode",
+        "name": "Pseudocode",
+        "status": "locked",
+        "approvedBy": null,
+        "approvedAt": null,
+        "artifact": "validate(input) -> calc(lineItems) -> applyTax() -> save() -> return invoiceId"
+      },
+      {
+        "key": "coding",
+        "name": "Coding (React/PHP/Kotlin)",
+        "status": "locked",
+        "approvedBy": null,
+        "approvedAt": null,
+        "artifact": "Code will be written in Cursor (with the PBMP context). A sample src/Invoice.php exists."
+      },
+      {
+        "key": "testing",
+        "name": "Testing",
+        "status": "locked",
+        "approvedBy": null,
+        "approvedAt": null,
+        "artifact": "Unit + integration tests; tax calculation edge cases."
+      },
+      {
+        "key": "deployment",
+        "name": "Deployment",
+        "status": "locked",
+        "approvedBy": null,
+        "approvedAt": null,
+        "artifact": "Staging -> approval -> production release (deploy.sh)."
+      }
     ],
     "checklist": [
-      { "key": "requirement", "label": "Requirement selected", "done": false },
-      { "key": "businessObject", "label": "Business object selected", "done": false },
-      { "key": "umlClass", "label": "UML class selected", "done": false },
-      { "key": "api", "label": "API selected", "done": false },
-      { "key": "designApproved", "label": "Design approved", "done": false },
-      { "key": "security", "label": "Security checklist", "done": false },
-      { "key": "standards", "label": "Coding standards acknowledged", "done": false }
+      {
+        "key": "requirement",
+        "label": "Requirement selected",
+        "done": false
+      },
+      {
+        "key": "businessObject",
+        "label": "Business object selected",
+        "done": false
+      },
+      {
+        "key": "umlClass",
+        "label": "UML class selected",
+        "done": false
+      },
+      {
+        "key": "api",
+        "label": "API selected",
+        "done": false
+      },
+      {
+        "key": "designApproved",
+        "label": "Design approved",
+        "done": false
+      },
+      {
+        "key": "security",
+        "label": "Security checklist",
+        "done": false
+      },
+      {
+        "key": "standards",
+        "label": "Coding standards acknowledged",
+        "done": false
+      }
     ],
     "audit": [
-      { "ts": "2026-06-20T10:00:00Z", "actor": "ba.rekha", "action": "Stage 'Business Requirements' approved" }
+      {
+        "ts": "2026-06-20T10:00:00Z",
+        "actor": "ba.rekha",
+        "action": "Stage 'Business Requirements' approved"
+      }
     ]
   },
   {
@@ -56,28 +137,126 @@
     "securityNotes": "A manager can only see their own team's data. Check team_id in the JWT token.",
     "codingStandards": "Kotlin official style guide. Use the MVVM architecture.",
     "stages": [
-      { "key": "requirements", "name": "Business Requirements", "status": "approved", "approvedBy": "ba.rekha", "approvedAt": "2026-06-18T09:00:00Z", "artifact": "Managers need a monthly summary of their team's attendance." },
-      { "key": "analysis", "name": "Business Analysis", "status": "approved", "approvedBy": "ba.rekha", "approvedAt": "2026-06-18T11:00:00Z", "artifact": "AttendanceRecord object; linked to Employee; role-based scope (team only)." },
-      { "key": "design", "name": "Solution Design", "status": "approved", "approvedBy": "arch.amit", "approvedAt": "2026-06-19T12:00:00Z", "artifact": "UML: Employee 1..* AttendanceRecord. REST: GET /api/v1/attendance/summary. MVVM." },
-      { "key": "pseudocode", "name": "Pseudocode", "status": "approved", "approvedBy": "arch.amit", "approvedAt": "2026-06-19T15:00:00Z", "artifact": "auth(teamId) -> fetchRecords(month) -> groupBy(status) -> render()" },
-      { "key": "coding", "name": "Coding (React/PHP/Kotlin)", "status": "active", "approvedBy": null, "approvedAt": null, "artifact": "Code will be written in Cursor (with the PBMP context)." },
-      { "key": "testing", "name": "Testing", "status": "locked", "approvedBy": null, "approvedAt": null, "artifact": "ViewModel unit tests; role scope tests." },
-      { "key": "deployment", "name": "Deployment", "status": "locked", "approvedBy": null, "approvedAt": null, "artifact": "Play Store internal track -> production." }
+      {
+        "key": "requirements",
+        "name": "Business Requirements",
+        "status": "approved",
+        "approvedBy": "ba.rekha",
+        "approvedAt": "2026-06-18T09:00:00Z",
+        "artifact": "Managers need a monthly summary of their team's attendance."
+      },
+      {
+        "key": "analysis",
+        "name": "Business Analysis",
+        "status": "approved",
+        "approvedBy": "ba.rekha",
+        "approvedAt": "2026-06-18T11:00:00Z",
+        "artifact": "AttendanceRecord object; linked to Employee; role-based scope (team only)."
+      },
+      {
+        "key": "design",
+        "name": "Solution Design",
+        "status": "approved",
+        "approvedBy": "arch.amit",
+        "approvedAt": "2026-06-19T12:00:00Z",
+        "artifact": "UML: Employee 1..* AttendanceRecord. REST: GET /api/v1/attendance/summary. MVVM."
+      },
+      {
+        "key": "pseudocode",
+        "name": "Pseudocode",
+        "status": "approved",
+        "approvedBy": "arch.amit",
+        "approvedAt": "2026-06-19T15:00:00Z",
+        "artifact": "auth(teamId) -> fetchRecords(month) -> groupBy(status) -> render()"
+      },
+      {
+        "key": "coding",
+        "name": "Coding (React/PHP/Kotlin)",
+        "status": "active",
+        "approvedBy": null,
+        "approvedAt": null,
+        "artifact": "Code will be written in Cursor (with the PBMP context)."
+      },
+      {
+        "key": "testing",
+        "name": "Testing",
+        "status": "locked",
+        "approvedBy": null,
+        "approvedAt": null,
+        "artifact": "ViewModel unit tests; role scope tests."
+      },
+      {
+        "key": "deployment",
+        "name": "Deployment",
+        "status": "locked",
+        "approvedBy": null,
+        "approvedAt": null,
+        "artifact": "Play Store internal track -> production."
+      }
     ],
     "checklist": [
-      { "key": "requirement", "label": "Requirement selected", "done": true },
-      { "key": "businessObject", "label": "Business object selected", "done": true },
-      { "key": "umlClass", "label": "UML class selected", "done": true },
-      { "key": "api", "label": "API selected", "done": true },
-      { "key": "designApproved", "label": "Design approved", "done": true },
-      { "key": "security", "label": "Security checklist", "done": true },
-      { "key": "standards", "label": "Coding standards acknowledged", "done": true }
+      {
+        "key": "requirement",
+        "label": "Requirement selected",
+        "done": true
+      },
+      {
+        "key": "businessObject",
+        "label": "Business object selected",
+        "done": true
+      },
+      {
+        "key": "umlClass",
+        "label": "UML class selected",
+        "done": true
+      },
+      {
+        "key": "api",
+        "label": "API selected",
+        "done": true
+      },
+      {
+        "key": "designApproved",
+        "label": "Design approved",
+        "done": true
+      },
+      {
+        "key": "security",
+        "label": "Security checklist",
+        "done": true
+      },
+      {
+        "key": "standards",
+        "label": "Coding standards acknowledged",
+        "done": true
+      }
     ],
     "audit": [
-      { "ts": "2026-06-18T09:00:00Z", "actor": "ba.rekha", "action": "Stage 'Business Requirements' approved" },
-      { "ts": "2026-06-18T11:00:00Z", "actor": "ba.rekha", "action": "Stage 'Business Analysis' approved" },
-      { "ts": "2026-06-19T12:00:00Z", "actor": "arch.amit", "action": "Stage 'Solution Design' approved" },
-      { "ts": "2026-06-19T15:00:00Z", "actor": "arch.amit", "action": "Stage 'Pseudocode' approved" }
+      {
+        "ts": "2026-06-18T09:00:00Z",
+        "actor": "ba.rekha",
+        "action": "Stage 'Business Requirements' approved"
+      },
+      {
+        "ts": "2026-06-18T11:00:00Z",
+        "actor": "ba.rekha",
+        "action": "Stage 'Business Analysis' approved"
+      },
+      {
+        "ts": "2026-06-19T12:00:00Z",
+        "actor": "arch.amit",
+        "action": "Stage 'Solution Design' approved"
+      },
+      {
+        "ts": "2026-06-19T15:00:00Z",
+        "actor": "arch.amit",
+        "action": "Stage 'Pseudocode' approved"
+      },
+      {
+        "ts": "2026-06-30T10:01:02.645Z",
+        "actor": "developer",
+        "action": "Cursor launch requested (context + git hook prepared)"
+      }
     ]
   }
 ]
