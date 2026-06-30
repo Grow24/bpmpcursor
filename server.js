@@ -30,8 +30,12 @@ const PHP_VALIDATOR = path.join(ROOT, "pbmp-php", "validate.php");
 const DEPLOY_SCRIPT = path.join(ROOT, "deploy.sh");
 const RELEASES_DIR = path.join(ROOT, "releases");
 function resolvePort() {
-  const raw = process.env.PORT;
-  if (raw != null && /^\d+$/.test(String(raw).trim())) return Number(raw);
+  // Prefer PORT, then Zeabur's WEB_PORT, then default. Ignore non-numeric
+  // values (e.g. an unsubstituted "${WEB_PORT}" template) so we never bind
+  // to the wrong port behind the platform proxy.
+  for (const raw of [process.env.PORT, process.env.WEB_PORT]) {
+    if (raw != null && /^\d+$/.test(String(raw).trim())) return Number(String(raw).trim());
+  }
   return 4000;
 }
 const PORT = resolvePort();
