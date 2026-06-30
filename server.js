@@ -29,8 +29,14 @@ const PROJECTS_DIR = path.join(ROOT, "projects");
 const PHP_VALIDATOR = path.join(ROOT, "pbmp-php", "validate.php");
 const DEPLOY_SCRIPT = path.join(ROOT, "deploy.sh");
 const RELEASES_DIR = path.join(ROOT, "releases");
-const PORT = process.env.PORT || 4000;
-const PBMP_URL = `http://localhost:${PORT}`;
+function resolvePort() {
+  const raw = process.env.PORT;
+  if (raw != null && /^\d+$/.test(String(raw).trim())) return Number(raw);
+  return 4000;
+}
+const PORT = resolvePort();
+const HOST = process.env.HOST || "0.0.0.0";
+const PBMP_URL = process.env.PUBLIC_URL || `http://localhost:${PORT}`;
 
 // Lifecycle stage order (this is your flow)
 const STAGE_ORDER = [
@@ -296,6 +302,10 @@ function serveStatic(req, res) {
 const server = http.createServer(async (req, res) => {
   const url = req.url.split("?")[0];
   const m = (re) => url.match(re);
+
+  if (req.method === "GET" && (url === "/health" || url === "/healthz")) {
+    return sendJson(res, 200, { ok: true, port: PORT });
+  }
 
   // GET all tasks
   if (req.method === "GET" && url === "/api/tasks") {
@@ -609,7 +619,7 @@ const server = http.createServer(async (req, res) => {
   return serveStatic(req, res);
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   console.log(`\n  PBMP Developer Workbench is running:`);
-  console.log(`  http://localhost:${PORT}\n`);
+  console.log(`  http://${HOST}:${PORT}\n`);
 });

@@ -55,7 +55,16 @@ Open in your browser: http://localhost:4000  (to change the port: `PORT=5000 nod
 
 ## Deploy to the cloud (e.g. Zeabur)
 
-The server reads `process.env.PORT`, so it runs as-is on Zeabur (start command: `node server.js`).
+The server reads `process.env.PORT` and binds to `0.0.0.0`, so it runs on Zeabur with start command `npm start`.
+
+### Zeabur checklist (fixes 502)
+
+1. **Variables** — delete any manual `PORT` override (e.g. `PORT=${WEB_PORT}`). Let Zeabur inject `PORT` automatically. Remove leftover vars from old apps (e.g. `PASSWORD`).
+2. **Settings** — clear any custom Dockerfile snippet in the dashboard, or set it to **Load from GitHub** (this repo includes a `Dockerfile`). Leave Startup Command empty (`npm start` is used).
+3. **Redeploy** — trigger a new deploy from the latest `main` commit and wait until status is **Running** (not Building/Canceled).
+4. **Verify** — open `https://your-app.zeabur.app/health` — should return `{"ok":true,"port":8080}`.
+
+Optional: set `PUBLIC_URL=https://your-app.zeabur.app` so git post-commit hooks call the cloud URL instead of localhost.
 
 **Important — how "Open in Cursor" works in the cloud:** the server runs in the cloud,
 so it cannot launch Cursor on a visitor's computer, and a browser cannot write files to a

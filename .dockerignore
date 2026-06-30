@@ -1,0 +1,7 @@
+.git
+.gitignore
+releases
+node_modules
+*.md
+yes
+yes.pub
