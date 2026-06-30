@@ -271,52 +271,66 @@ async function doLaunch(id) {
       $("gitHookBox").innerHTML = `<b>🪝 Git hook not installed:</b> ${data.gitHook.error || "unknown"}`;
     }
     $("resultPreview").textContent = data.contextPreview;
-    // On the same machine, auto-open via the official Cursor deep link
-    if (data.isLocal && data.deepLink) {
-      try {
-        window.location.href = data.deepLink;
-      } catch (e) {}
-    }
     tasks = await api.list();
   }
   renderDetail();
 }
 
-// Build the three ways to open ONLY this project in Cursor on the user's machine
+// Build the ways to open ONLY this project in Cursor on the user's machine.
+// Cursor does not support a folder/open deeplink, so cloud users must download
+// or clone the project first, then run `cursor .` locally.
 function renderOpenOptions(data) {
   const el = $("openOptions");
-  const localNote = data.isLocal
-    ? `<small>You are on the same machine as the server — Cursor should open automatically. If not, click the button.</small>`
-    : `<small>This deep link opens the folder only if it already exists on your machine (use Git or ZIP below first).</small>`;
+
+  if (data.isLocal && data.launched) {
+    el.innerHTML = `
+      <div class="open-opt">
+        <div class="ttl">Cursor opened on this machine</div>
+        <small>The project folder was launched via the Cursor CLI. If the window did not appear, run the command below in your terminal.</small>
+        <div class="cmd-row" style="margin-top:8px">
+          <code class="cmd" id="openCmd">cursor ${data.folder}</code>
+          <button class="copy-btn" id="copyOpen">Copy</button>
+        </div>
+      </div>`;
+    wireCopy("copyOpen", "openCmd");
+    return;
+  }
 
   el.innerHTML = `
     <div class="open-opt">
-      <div class="ttl">A) One-click <span>(opens only this folder; no login needed)</span></div>
-      <a class="btn-link" href="${data.deepLink}">🖱️ Open in Cursor</a>
-      ${localNote}
+      <div class="ttl">A) ZIP <span>(recommended — works on Zeabur/cloud)</span></div>
+      <a class="dl-btn" href="${data.downloadUrl}" download>⬇ Download ${data.folder}.zip</a>
+      <small>Extract the ZIP, open a terminal in that folder, then run:</small>
+      <div class="cmd-row" style="margin-top:8px">
+        <code class="cmd" id="openCmd">${data.openCommand || `cd ${data.folder} && cursor .`}</code>
+        <button class="copy-btn" id="copyOpen">Copy</button>
+      </div>
     </div>
     <div class="open-opt">
-      <div class="ttl">B) Git <span>(clone just this project, then open it)</span></div>
+      <div class="ttl">B) Git <span>(clone repo, open this project folder)</span></div>
       <div class="cmd-row">
         <code class="cmd" id="cloneCmd">${data.cloneCommand}</code>
         <button class="copy-btn" id="copyClone">Copy</button>
       </div>
-      <small>Run this in your terminal. It clones only this repo and opens that one folder in Cursor.</small>
+      <small>Run this in your terminal. It clones the repo and opens only this project in Cursor.</small>
     </div>
-    <div class="open-opt">
-      <div class="ttl">C) ZIP <span>(download just this project)</span></div>
-      <a class="dl-btn" href="${data.downloadUrl}" download>⬇ Download ${data.folder}.zip</a>
-      <small>Extract it, then in that folder run <code>cursor .</code> (or drag the folder into Cursor) — only that folder opens.</small>
+    <div class="open-opt note-box">
+      <small><b>Note:</b> The old one-click deep link does not work — Cursor only supports prompt/command/rule deeplinks, not opening folders from a cloud server path. Use ZIP or Git above.</small>
     </div>`;
 
-  const copyBtn = $("copyClone");
-  if (copyBtn) {
-    copyBtn.onclick = () => {
-      navigator.clipboard?.writeText(data.cloneCommand);
-      copyBtn.textContent = "Copied!";
-      setTimeout(() => (copyBtn.textContent = "Copy"), 1500);
-    };
-  }
+  wireCopy("copyClone", "cloneCmd");
+  wireCopy("copyOpen", "openCmd");
+}
+
+function wireCopy(btnId, codeId) {
+  const btn = $(btnId);
+  const code = $(codeId);
+  if (!btn || !code) return;
+  btn.onclick = () => {
+    navigator.clipboard?.writeText(code.textContent);
+    btn.textContent = "Copied!";
+    setTimeout(() => (btn.textContent = "Copy"), 1500);
+  };
 }
 
 async function doValidate(id) {

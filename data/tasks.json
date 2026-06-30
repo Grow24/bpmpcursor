@@ -5,7 +5,7 @@
     "module": "Billing",
     "language": "React + PHP",
     "projectFolder": "invoice-feature",
-    "repoUrl": "https://github.com/your-org/invoice-feature.git",
+    "repoUrl": "https://github.com/Grow24/bpmpcursor.git",
     "requirement": {
       "id": "REQ-2025-014",
       "text": "A user can select a customer and create a new invoice where line items, tax and total are calculated automatically."
@@ -125,7 +125,7 @@
     "module": "HR",
     "language": "Kotlin",
     "projectFolder": "attendance-report",
-    "repoUrl": "https://github.com/your-org/attendance-report.git",
+    "repoUrl": "https://github.com/Grow24/bpmpcursor.git",
     "requirement": {
       "id": "REQ-2025-021",
       "text": "A manager can view their team's monthly attendance on a mobile screen, with present/absent/leave."

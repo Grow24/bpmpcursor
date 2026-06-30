@@ -90,6 +90,7 @@ body {
   transition: 0.15s;
 }
 .open-opt a.btn-link:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.open-opt.note-box { border-color: rgba(245, 158, 11, 0.35); background: rgba(245, 158, 11, 0.08); }
 .open-opt .cmd-row { display: flex; gap: 8px; align-items: stretch; }
 .open-opt code.cmd {
   flex: 1;

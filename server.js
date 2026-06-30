@@ -454,22 +454,21 @@ const server = http.createServer(async (req, res) => {
     saveTasks(tasks);
 
     const folder = task.projectFolder;
-    const repoUrl = task.repoUrl || `https://github.com/your-org/${folder}.git`;
+    const repoUrl = task.repoUrl || "https://github.com/Grow24/bpmpcursor.git";
+    const cloneCommand = repoUrl.includes("bpmpcursor")
+      ? `git clone ${repoUrl} bpmpcursor && cd bpmpcursor/projects/${folder} && cursor .`
+      : `git clone ${repoUrl} ${folder} && cursor ${folder}`;
     return sendJson(res, 200, {
       message: launched
         ? "Cursor launched on this machine. Now write code + commit (the git hook runs validation)."
-        : "Ready. Use one of the options below to open ONLY this project in Cursor on your machine.",
+        : "Download or clone the project to your machine, then open it in Cursor using the commands below.",
       isLocal: local,
       contextFile: path.relative(ROOT, contextFile),
       projectPath: path.relative(ROOT, projectPath),
-      // (A) Same-machine: official Cursor deep link to open only this folder.
-      // Opens the editor/folder on the machine running the browser; no login needed.
-      deepLink:
-        "cursor://anysphere.cursor-deeplink/folder/open?path=" +
-        encodeURIComponent(projectPath),
-      // (B) Git: clone only this repo and open just that folder.
-      cloneCommand: `git clone ${repoUrl} ${folder} && cursor ${folder}`,
-      // (C) ZIP: download just this project, extract, then open it.
+      // After ZIP extract, run this in the project folder.
+      openCommand: `cd ${folder} && cursor .`,
+      // Clone the repo and open only this project subfolder.
+      cloneCommand,
       downloadUrl: `/api/tasks/${task.id}/download`,
       folder,
       launched,

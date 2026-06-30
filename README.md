@@ -71,13 +71,8 @@ so it cannot launch Cursor on a visitor's computer, and a browser cannot write f
 visitor's disk. The project must first reach the user's machine. So "Open in Cursor" offers
 three ways to open **only that one project** on the user's own machine:
 
-- **A) One-click deep link** — `cursor://anysphere.cursor-deeplink/folder/open?path=...`
-  opens the folder in Cursor on the user's machine (no login needed). Works once the folder
-  exists locally (and automatically on the same machine as the server).
-- **B) Git** — `git clone <repoUrl> <folder> && cursor <folder>` clones just that repo and
-  opens that one folder. Set each task's `repoUrl` in `data/tasks.json` to your real repo.
-- **C) ZIP** — downloads only that project as a `.zip` (built in pure Node, no `zip` binary
-  needed). Extract it, then run `cursor .` in that folder.
+- **A) ZIP download** — download the project as a `.zip`, extract it, then run `cursor .` in that folder (recommended on cloud/Zeabur).
+- **B) Git clone** — `git clone https://github.com/Grow24/bpmpcursor.git` then open `projects/<folder>` in Cursor.
 
 ## The two demo tasks
 
