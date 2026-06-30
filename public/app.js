@@ -50,9 +50,11 @@ function localProjectPath(folder) {
 
 function openFolderInCursor(absPath) {
   const normalized = absPath.replace(/\\/g, "/");
+  // Cursor registers its own cursor:// protocol handler. Using vscode://
+  // would open Visual Studio Code instead.
   const uri = normalized.startsWith("/")
-    ? `vscode://file${normalized}`
-    : `vscode://file/${normalized}`;
+    ? `cursor://file${normalized}`
+    : `cursor://file/${normalized}`;
   window.location.href = uri;
 }
 
@@ -133,7 +135,7 @@ function finishCloudLaunch(data) {
           <button class="copy-btn" id="copyOpen">Copy</button>
         </div>
         <button type="button" class="btn-link" id="retryOpen" style="margin-top:10px">🖱️ Open in Cursor again</button>
-        <small style="display:block;margin-top:8px">A ZIP was also downloaded with the latest PBMP context. If Cursor did not open, allow the <b>vscode://</b> link in your browser, or run the command above in terminal.</small>
+        <small style="display:block;margin-top:8px">A ZIP was also downloaded with the latest PBMP context. If a browser dialog appears, choose <b>Cursor</b>. If Cursor did not open, run the command above in terminal.</small>
       </div>`;
     wireCopy("copyOpen", "openCmd");
     $("retryOpen").onclick = () => openFolderInCursor(projectPath);
