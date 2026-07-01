@@ -66,25 +66,36 @@ The server reads `process.env.PORT` and binds to `0.0.0.0`, so it runs on Zeabur
 
 Optional: set `PUBLIC_URL=https://your-app.zeabur.app` so git post-commit hooks call the cloud URL instead of localhost.
 
-### Multi-user Cursor access (no Gmail login on every machine)
+### Recommended PBMP + Cursor architecture
 
-**You cannot store a Gmail password in PBMP** — Cursor does not allow third-party apps to log users into the desktop app with email/password.
+```
+Person A / Person B  →  PBMP (role: BA / Dev / QA / DevOps)
+                              ↓ server-side CURSOR_API_KEY only
+                       Cursor Cloud Agents API
+                              ↓
+                       GitHub: Grow24/bpmpcursor
+                              ↓
+                       PBMP shows status, branch, PR link, approval gates
+```
 
-The supported approach for multiple users:
+**Primary workflow:** ☁ **Run in Cursor Cloud** — no cursor.com login for Person A/B.  
+**Secondary:** Open in Cursor (local) — optional, requires local Cursor install.  
+**Do not use** cursor.com browser as the main workflow (requires Account C login).
 
-1. **Cursor Team** — use org email `grow24.ai.collaboration@gmail.com` (or your team owner account).
-2. **Service account API key** — in [Cursor Dashboard](https://cursor.com/dashboard) → Team → Service accounts, create a key.
-3. **Zeabur Variables** (secrets, never commit):
+### Zeabur variables (server-side only)
 
 | Variable | Example | Purpose |
 |----------|---------|---------|
-| `CURSOR_TEAM_EMAIL` | `grow24.ai.collaboration@gmail.com` | Shown in UI (display only) |
-| `CURSOR_API_KEY` | `cursor_...` | Server-side; all PBMP users share cloud agents |
-| `CURSOR_MODEL` | `auto` (default) | Optional; use `composer-2.5` if your plan supports it |
+| `CURSOR_TEAM_EMAIL` | `grow24.ai.collaboration@gmail.com` | Account C (display only) |
+| `CURSOR_API_KEY` | `cursor_...` | PBMP → Cursor API (never expose to browser) |
+| `CURSOR_MODEL` | `auto` | Model ID |
+| `CURSOR_TARGET_REPOSITORY` | `https://github.com/Grow24/bpmpcursor` | Repo for cloud agents |
+| `CURSOR_DEFAULT_REF` | `main` | Base branch |
+| `CURSOR_AUTO_CREATE_PR` | `true` | Auto-open PR when agent finishes |
+| `PBMP_ALLOWED_REPOS` | `https://github.com/Grow24/bpmpcursor` | Comma-separated allowlist |
+| `PBMP_AGENT_BRANCH_PREFIX` | `pbmp` | Branch naming hint in agent prompt |
 
-4. Redeploy. Users click **☁ Run in Cursor Cloud** — coding runs on Cursor’s servers via the team API key. **No Gmail login on each developer machine.**
-
-**Open in Cursor (local)** still opens the folder on the user’s PC (requires Cursor installed). Use **Cloud** for true multi-user access from Zeabur.
+Never store Gmail passwords. Rotate `CURSOR_API_KEY` per environment.
 
 **Important — how "Open in Cursor" works in the cloud:** the server runs in the cloud,
 so it cannot launch Cursor on a visitor's computer, and a browser cannot write files to a

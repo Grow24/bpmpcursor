@@ -486,6 +486,9 @@ const server = http.createServer(async (req, res) => {
   // POST run task in Cursor Cloud (shared org API key — multi-user, no local login)
   r = m(/^\/api\/tasks\/([\w-]+)\/cloud-agent$/);
   if (req.method === "POST" && r) {
+    const body = await readBody(req);
+    const actor = body.actor || "developer";
+    const role = body.role || "";
     const tasks = loadTasks();
     const task = findTask(tasks, r[1]);
     if (!task) return sendJson(res, 404, { error: "Task not found" });
@@ -521,10 +524,18 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 503, result);
     }
 
+    task.lastCloudRun = {
+      agentId: result.agentId,
+      runId: result.runId,
+      startedBy: actor,
+      role,
+      startedAt: new Date().toISOString(),
+      repository: result.repository,
+    };
     addAudit(
       task,
-      "developer",
-      `Cursor Cloud Agent started (${result.agentId || "agent"})`
+      actor,
+      `Cursor Cloud Agent started [${result.agentId || "agent"} / ${result.runId || "run"}] (${role || "Developer"})`
     );
     saveTasks(tasks);
     return sendJson(res, 200, { ...result, task });

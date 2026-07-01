@@ -10,7 +10,11 @@ const api = {
       role: currentUser.role,
     }),
   launch: (id) => post(`/api/tasks/${id}/launch`, {}),
-  cloudAgent: (id) => post(`/api/tasks/${id}/cloud-agent`, {}),
+  cloudAgent: (id) =>
+    post(`/api/tasks/${id}/cloud-agent`, {
+      actor: currentUser.id,
+      role: currentUser.role,
+    }),
   cloudStatus: (agentId, runId) =>
     fetch(`/api/cursor/agents/${agentId}/runs/${runId}`).then(async (r) => ({
       ok: r.ok,
@@ -334,7 +338,7 @@ function renderDetail() {
   if (cb) {
     cb.classList.toggle("hidden", !cursorAccess.cloudEnabled);
     cb.disabled = !ready || codingDone || !cursorAccess.cloudEnabled;
-    cb.textContent = codingDone ? "Cloud run done ✓" : "☁ Run in Cursor Cloud";
+    cb.textContent = codingDone ? "Cloud run done ✓" : "☁ Run in Cursor Cloud (recommended)";
     cb.onclick = () => doCloudAgent(t.id);
   }
 
@@ -445,32 +449,26 @@ async function doCloudAgent(id) {
 function renderCloudStatusPanel(data, statusData) {
   const el = $("openOptions");
   const status = statusData?.status || "STARTING";
-  const branch = statusData?.git?.branches?.[0]?.branch;
-  const prUrl = statusData?.git?.branches?.[0]?.prUrl;
+  const branch = statusData?.branch || statusData?.git?.branches?.[0]?.branch;
+  const prUrl = statusData?.prUrl || statusData?.git?.branches?.[0]?.prUrl;
   const resultText = statusData?.result;
   const terminal = ["FINISHED", "ERROR", "CANCELLED", "EXPIRED"].includes(status);
+  const repo =
+    cursorAccess.targetRepository || "https://github.com/Grow24/bpmpcursor";
 
   el.innerHTML = `
     <div class="open-opt">
-      <div class="ttl">Live status <span>(no Cursor login needed in PBMP)</span></div>
+      <div class="ttl">PBMP → Cursor Cloud <span>(primary workflow — no cursor.com login)</span></div>
       <div class="cloud-status-line"><b>Status:</b> <span id="cloudStatusText">${status}</span></div>
+      <div class="cloud-status-line"><b>Repo:</b> ${repo}</div>
       ${branch ? `<div class="cloud-status-line"><b>Branch:</b> ${branch}</div>` : ""}
       ${prUrl ? `<div class="cloud-status-line"><b>PR:</b> <a href="${prUrl}" target="_blank" rel="noopener">${prUrl}</a></div>` : ""}
       ${resultText ? `<pre class="cloud-result">${resultText}</pre>` : ""}
       <small id="cloudStatusHint">${
         terminal
-          ? "Run finished. Use Validate & Complete when code is on GitHub, or pull the branch locally."
-          : "Agent is working on Cursor servers using the Grow24 API key. This page updates automatically."
+          ? "Run finished. Review the PR on GitHub, then use Validate & Complete in PBMP."
+          : "Person A/B trigger coding here. Account C API key runs the agent on Cursor servers."
       }</small>
-      ${
-        data.webUrl
-          ? `<details style="margin-top:10px"><summary>Advanced: view on cursor.com</summary>
-             <p class="cloud-warn">⚠ You must be logged into <b>${cursorAccess.teamEmail || "the Grow24 team account"}</b> on cursor.com — not your personal account. Otherwise you will see "Cloud Agent not found". Use Live status above instead.</p>
-             <a href="${data.webUrl}" target="_blank" rel="noopener">${data.webUrl}</a>
-             ${cursorAccess.teamLoginUrl ? ` · <a href="${cursorAccess.teamLoginUrl}" target="_blank" rel="noopener">Sign in as team account first →</a>` : ""}
-             </details>`
-          : ""
-      }
     </div>`;
 }
 
@@ -478,7 +476,7 @@ function startCloudStatusPolling(agentId, runId) {
   const poll = async () => {
     const { ok, data } = await api.cloudStatus(agentId, runId);
     if (!ok) return;
-    renderCloudStatusPanel({ agentId, runId, webUrl: `https://cursor.com/agents/${agentId}` }, data);
+    renderCloudStatusPanel({ agentId, runId }, data);
     if (["FINISHED", "ERROR", "CANCELLED", "EXPIRED"].includes(data.status)) {
       clearInterval(cloudPollTimer);
       cloudPollTimer = null;
