@@ -404,6 +404,25 @@ body {
   margin: 8px 0;
   line-height: 1.45;
 }
+.open-opt.cloud-running { border-color: rgba(124, 92, 255, 0.45); }
+.open-opt.cloud-done { border-color: rgba(46, 160, 67, 0.55); }
+.cloud-pulse {
+  font-size: 13px;
+  color: #c4b5fd;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  background: rgba(124, 92, 255, 0.12);
+  border-radius: 8px;
+}
+.cloud-next-steps {
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.cloud-next-steps ol { margin: 8px 0 0 18px; }
+.cloud-next-steps code { font-size: 11.5px; }
+.cloud-status-line a { color: var(--accent); }
 
 /* Validation engine badge */
 .engine {

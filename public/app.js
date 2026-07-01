@@ -357,6 +357,18 @@ function renderDetail() {
   db.textContent = deployDone ? "Deployed ✓" : "🚀 Deploy to Production";
   db.onclick = () => doDeploy(t.id);
 
+  if (t.lastCloudRun?.agentId && t.lastCloudRun?.runId && codingStarted && !codingDone) {
+    $("result").classList.remove("hidden");
+    $("previewWrap").style.display = "block";
+    if (!$("openOptions").innerHTML.trim()) {
+      $("resultTitle").textContent = "☁ Cursor Cloud Agent";
+      $("resultMsg").textContent = "Watching agent progress…";
+    }
+    if (!cloudPollTimer) {
+      startCloudStatusPolling(t.lastCloudRun.agentId, t.lastCloudRun.runId);
+    }
+  }
+
   $("launchHint").textContent = deployDone
     ? "🎉 Deployed to production! Lifecycle complete."
     : deployReady
@@ -415,6 +427,12 @@ async function doLaunch(id) {
 }
 
 async function doCloudAgent(id) {
+  const t = task();
+  if (t?.lastCloudRun?.agentId && cloudPollTimer) {
+    $("result").classList.remove("hidden");
+    $("resultMsg").textContent = "Agent already running — watch status below. Do not click again.";
+    return;
+  }
   const cb = $("cloudBtn");
   cb.disabled = true;
   cb.textContent = "Starting cloud agent...";
@@ -446,30 +464,75 @@ async function doCloudAgent(id) {
   renderDetail();
 }
 
+function githubBranchUrl(repo, branch) {
+  if (!repo || !branch) return null;
+  const base = repo.replace(/\/$/, "").replace(/\.git$/, "");
+  return `${base}/tree/${branch.split("/").map(encodeURIComponent).join("/")}`;
+}
+
 function renderCloudStatusPanel(data, statusData) {
   const el = $("openOptions");
   const status = statusData?.status || "STARTING";
   const branch = statusData?.branch || statusData?.git?.branches?.[0]?.branch;
   const prUrl = statusData?.prUrl || statusData?.git?.branches?.[0]?.prUrl;
   const resultText = statusData?.result;
+  const running = ["RUNNING", "CREATING", "STARTING", "ACTIVE"].includes(status);
   const terminal = ["FINISHED", "ERROR", "CANCELLED", "EXPIRED"].includes(status);
   const repo =
     cursorAccess.targetRepository || "https://github.com/Grow24/bpmpcursor";
+  const branchUrl = githubBranchUrl(repo, branch);
 
   el.innerHTML = `
-    <div class="open-opt">
-      <div class="ttl">PBMP → Cursor Cloud <span>(primary workflow — no cursor.com login)</span></div>
+    <div class="open-opt ${running ? "cloud-running" : terminal && status === "FINISHED" ? "cloud-done" : ""}">
+      <div class="ttl">PBMP → Cursor Cloud</div>
+      ${
+        running
+          ? `<div class="cloud-pulse">⏳ Agent is coding on Cursor servers — no window will open on your PC. Wait 2–10 minutes.</div>`
+          : ""
+      }
       <div class="cloud-status-line"><b>Status:</b> <span id="cloudStatusText">${status}</span></div>
-      <div class="cloud-status-line"><b>Repo:</b> ${repo}</div>
-      ${branch ? `<div class="cloud-status-line"><b>Branch:</b> ${branch}</div>` : ""}
-      ${prUrl ? `<div class="cloud-status-line"><b>PR:</b> <a href="${prUrl}" target="_blank" rel="noopener">${prUrl}</a></div>` : ""}
+      <div class="cloud-status-line"><b>Repo:</b> <a href="${repo}" target="_blank" rel="noopener">${repo}</a></div>
+      ${
+        branch
+          ? `<div class="cloud-status-line"><b>Branch:</b> ${
+              branchUrl
+                ? `<a href="${branchUrl}" target="_blank" rel="noopener">${branch}</a>`
+                : branch
+            }</div>`
+          : ""
+      }
+      ${prUrl ? `<div class="cloud-status-line"><b>PR:</b> <a href="${prUrl}" target="_blank" rel="noopener">Open pull request →</a></div>` : ""}
       ${resultText ? `<pre class="cloud-result">${resultText}</pre>` : ""}
-      <small id="cloudStatusHint">${
-        terminal
-          ? "Run finished. Review the PR on GitHub, then use Validate & Complete in PBMP."
-          : "Person A/B trigger coding here. Account C API key runs the agent on Cursor servers."
-      }</small>
+      <div class="cloud-next-steps">
+        <b>What happens next:</b>
+        <ol>
+          ${
+            running
+              ? `<li>Cursor AI is writing code on branch <code>${branch || "…"}</code></li>
+                 <li>This page auto-updates every 4 seconds</li>
+                 <li>When status = <b>FINISHED</b>, open the GitHub branch or PR</li>`
+              : status === "FINISHED"
+              ? `<li>✅ Coding done — open GitHub branch/PR above</li>
+                 <li>Review the changes on GitHub</li>
+                 <li>Click <b>Validate & Complete</b> in PBMP</li>`
+              : `<li>Check GitHub for branch <code>${branch || ""}</code></li>
+                 <li>Or click Run in Cursor Cloud again</li>`
+          }
+        </ol>
+      </div>
     </div>`;
+
+  if (terminal && status === "FINISHED") {
+    $("resultTitle").textContent = "✅ Cursor Cloud Agent finished";
+    $("resultMsg").textContent =
+      "Code is on GitHub. Review the branch/PR, then click Validate & Complete.";
+    boxGlowSuccess();
+  }
+}
+
+function boxGlowSuccess() {
+  const box = $("result");
+  if (box) box.style.borderColor = "var(--accent-2)";
 }
 
 function startCloudStatusPolling(agentId, runId) {
