@@ -398,6 +398,12 @@ body {
   max-height: 180px;
   overflow: auto;
 }
+.cloud-warn {
+  font-size: 12px;
+  color: #ffb86b;
+  margin: 8px 0;
+  line-height: 1.45;
+}
 
 /* Validation engine badge */
 .engine {

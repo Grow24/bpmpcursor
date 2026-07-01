@@ -464,7 +464,11 @@ function renderCloudStatusPanel(data, statusData) {
       }</small>
       ${
         data.webUrl
-          ? `<details style="margin-top:10px"><summary>Optional: open on cursor.com (requires Grow24 team login)</summary><a href="${data.webUrl}" target="_blank" rel="noopener">${data.webUrl}</a></details>`
+          ? `<details style="margin-top:10px"><summary>Advanced: view on cursor.com</summary>
+             <p class="cloud-warn">⚠ You must be logged into <b>${cursorAccess.teamEmail || "the Grow24 team account"}</b> on cursor.com — not your personal account. Otherwise you will see "Cloud Agent not found". Use Live status above instead.</p>
+             <a href="${data.webUrl}" target="_blank" rel="noopener">${data.webUrl}</a>
+             ${cursorAccess.teamLoginUrl ? ` · <a href="${cursorAccess.teamLoginUrl}" target="_blank" rel="noopener">Sign in as team account first →</a>` : ""}
+             </details>`
           : ""
       }
     </div>`;
