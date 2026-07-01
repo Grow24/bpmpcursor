@@ -626,9 +626,12 @@ function renderCursorAccessBox() {
   }
   el.classList.remove("hidden");
   const status = cursorAccess.cloudEnabled
-    ? "☁ Cloud enabled — all users share team API key (no per-machine Gmail login)"
-    : "⚠ Add CURSOR_API_KEY on Zeabur for multi-user cloud access";
-  el.innerHTML = `<span class="cursor-team-label">Cursor team:</span> <b>${cursorAccess.teamEmail || "not set"}</b> · ${status}`;
+    ? "☁ Cloud uses Account C API key — A & B need no Cursor login for cloud runs"
+    : "⚠ Add CURSOR_API_KEY on Zeabur (from Account C dashboard)";
+  const loginLink = cursorAccess.teamLoginUrl
+    ? `<a href="${cursorAccess.teamLoginUrl}" target="_blank" rel="noopener" class="team-login-link">Sign in as team account →</a>`
+    : "";
+  el.innerHTML = `<span class="cursor-team-label">Cursor team (Account C):</span> <b>${cursorAccess.teamEmail || "not set"}</b> · ${status} ${loginLink}`;
 }
 
 function setupUserSelector() {
