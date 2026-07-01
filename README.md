@@ -80,6 +80,7 @@ The supported approach for multiple users:
 |----------|---------|---------|
 | `CURSOR_TEAM_EMAIL` | `grow24.ai.collaboration@gmail.com` | Shown in UI (display only) |
 | `CURSOR_API_KEY` | `cursor_...` | Server-side; all PBMP users share cloud agents |
+| `CURSOR_MODEL` | `auto` (default) | Optional; use `composer-2.5` if your plan supports it |
 
 4. Redeploy. Users click **☁ Run in Cursor Cloud** — coding runs on Cursor’s servers via the team API key. **No Gmail login on each developer machine.**
 
