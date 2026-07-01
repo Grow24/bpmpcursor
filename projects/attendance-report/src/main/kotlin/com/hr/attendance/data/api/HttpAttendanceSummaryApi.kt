@@ -16,7 +16,7 @@ class HttpAttendanceSummaryApi(
   ): List<AttendanceSummaryItem> {
     val url = buildUrl(month)
     val body = httpGet(url, authToken)
-  return mapper.mapEmployees(parseEmployeesJson(body))
+    return mapper.mapEmployees(parseEmployeesJson(body))
   }
 
   private fun buildUrl(month: YearMonth): String =
