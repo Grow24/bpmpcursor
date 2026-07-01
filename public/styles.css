@@ -353,7 +353,7 @@ body {
 
 /* Launch */
 .launch-row { display: flex; align-items: center; gap: 14px; margin-top: 22px; flex-wrap: wrap; }
-.launch-btn, .validate-btn {
+.launch-btn, .validate-btn, .cloud-btn {
   border: none;
   font-weight: 700;
   font-size: 14px;
@@ -363,10 +363,22 @@ body {
   transition: 0.15s;
 }
 .launch-btn { background: var(--accent); color: #0b0f17; }
+.cloud-btn { background: #7c5cff; color: #fff; }
 .validate-btn { background: #ffb86b; color: #1a1206; }
 .deploy-btn { background: #2ea043; color: #04140a; }
-.launch-btn:hover:not(:disabled), .validate-btn:hover:not(:disabled), .deploy-btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
-.launch-btn:disabled, .validate-btn:disabled, .deploy-btn:disabled { background: var(--tag); color: var(--muted); cursor: not-allowed; }
+.launch-btn:hover:not(:disabled), .validate-btn:hover:not(:disabled), .cloud-btn:hover:not(:disabled), .deploy-btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+.launch-btn:disabled, .validate-btn:disabled, .cloud-btn:disabled, .deploy-btn:disabled { background: var(--tag); color: var(--muted); cursor: not-allowed; }
+.cursor-access-box {
+  font-size: 11.5px;
+  color: var(--muted);
+  background: rgba(124, 92, 255, 0.1);
+  border: 1px solid rgba(124, 92, 255, 0.25);
+  border-radius: 8px;
+  padding: 6px 10px;
+  max-width: 520px;
+  text-align: right;
+}
+.cursor-access-box b { color: var(--text); }
 
 /* Validation engine badge */
 .engine {

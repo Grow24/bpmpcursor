@@ -21,6 +21,7 @@ const fs = require("fs");
 const path = require("path");
 const { spawn, execSync } = require("child_process");
 const { createZip } = require("./lib/zip");
+const { getCursorAccessConfig, launchCloudAgent } = require("./lib/cursor-access");
 
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, "public");
@@ -321,7 +322,11 @@ const server = http.createServer(async (req, res) => {
   }
   // GET meta: stage->role map + users list (for role-based approval)
   if (req.method === "GET" && url === "/api/meta") {
-    return sendJson(res, 200, { stageRoles: STAGE_ROLES, users: USERS });
+    return sendJson(res, 200, {
+      stageRoles: STAGE_ROLES,
+      users: USERS,
+      cursorAccess: getCursorAccessConfig(),
+    });
   }
 
   // GET single task
@@ -476,6 +481,53 @@ const server = http.createServer(async (req, res) => {
       gitHook,
       contextPreview: buildContext(task),
     });
+  }
+
+  // POST run task in Cursor Cloud (shared org API key — multi-user, no local login)
+  r = m(/^\/api\/tasks\/([\w-]+)\/cloud-agent$/);
+  if (req.method === "POST" && r) {
+    const tasks = loadTasks();
+    const task = findTask(tasks, r[1]);
+    if (!task) return sendJson(res, 404, { error: "Task not found" });
+
+    if (!previousStagesApproved(task, "coding")) {
+      const pendingStages = STAGE_ORDER.slice(0, CODING_INDEX)
+        .map((k) => stageOf(task, k))
+        .filter((s) => s.status !== "approved")
+        .map((s) => s.name);
+      return sendJson(res, 422, {
+        error: "Approve these stages before coding:",
+        pendingStages,
+      });
+    }
+    const pending = pendingChecklist(task);
+    if (pending.length > 0) {
+      return sendJson(res, 422, {
+        error: "Checklist incomplete. Please complete these first:",
+        pending,
+      });
+    }
+
+    const coding = stageOf(task, "coding");
+    if (coding.status === "locked") coding.status = "active";
+
+    const projectPath = path.join(PROJECTS_DIR, task.projectFolder);
+    const rulesDir = path.join(projectPath, ".cursor", "rules");
+    fs.mkdirSync(rulesDir, { recursive: true });
+    fs.writeFileSync(path.join(rulesDir, "pbmp-context.mdc"), buildContext(task));
+
+    const result = await launchCloudAgent(task, buildContext);
+    if (!result.ok) {
+      return sendJson(res, 503, result);
+    }
+
+    addAudit(
+      task,
+      "developer",
+      `Cursor Cloud Agent started (${result.agentId || "agent"})`
+    );
+    saveTasks(tasks);
+    return sendJson(res, 200, { ...result, task });
   }
 
   // GET download project as ZIP (so a remote user can get ONLY this folder)

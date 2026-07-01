@@ -29,6 +29,7 @@
           <input id="localProjectsRoot" type="text" placeholder="/home/you/bpmpcursor/projects" />
           <button type="button" id="saveLocalPath" class="save-path-btn">Save</button>
         </div>
+        <div id="cursorAccessBox" class="cursor-access-box hidden"></div>
       </div>
     </header>
 
@@ -71,7 +72,8 @@
 
           <!-- Coding actions -->
           <div class="launch-row">
-            <button id="launchBtn" class="launch-btn" disabled>Open in Cursor</button>
+            <button id="launchBtn" class="launch-btn" disabled>Open in Cursor (local)</button>
+            <button id="cloudBtn" class="cloud-btn hidden" disabled>☁ Run in Cursor Cloud</button>
             <button id="validateBtn" class="validate-btn" disabled>Validate &amp; Complete</button>
             <button id="deployBtn" class="deploy-btn" disabled>🚀 Deploy to Production</button>
             <span id="launchHint" class="muted"></span>

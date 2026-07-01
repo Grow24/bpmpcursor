@@ -66,6 +66,25 @@ The server reads `process.env.PORT` and binds to `0.0.0.0`, so it runs on Zeabur
 
 Optional: set `PUBLIC_URL=https://your-app.zeabur.app` so git post-commit hooks call the cloud URL instead of localhost.
 
+### Multi-user Cursor access (no Gmail login on every machine)
+
+**You cannot store a Gmail password in PBMP** — Cursor does not allow third-party apps to log users into the desktop app with email/password.
+
+The supported approach for multiple users:
+
+1. **Cursor Team** — use org email `grow24.ai.collaboration@gmail.com` (or your team owner account).
+2. **Service account API key** — in [Cursor Dashboard](https://cursor.com/dashboard) → Team → Service accounts, create a key.
+3. **Zeabur Variables** (secrets, never commit):
+
+| Variable | Example | Purpose |
+|----------|---------|---------|
+| `CURSOR_TEAM_EMAIL` | `grow24.ai.collaboration@gmail.com` | Shown in UI (display only) |
+| `CURSOR_API_KEY` | `cursor_...` | Server-side; all PBMP users share cloud agents |
+
+4. Redeploy. Users click **☁ Run in Cursor Cloud** — coding runs on Cursor’s servers via the team API key. **No Gmail login on each developer machine.**
+
+**Open in Cursor (local)** still opens the folder on the user’s PC (requires Cursor installed). Use **Cloud** for true multi-user access from Zeabur.
+
 **Important — how "Open in Cursor" works in the cloud:** the server runs in the cloud,
 so it cannot launch Cursor on a visitor's computer, and a browser cannot write files to a
 visitor's disk. The project must first reach the user's machine. So "Open in Cursor" offers

@@ -10,6 +10,7 @@ const api = {
       role: currentUser.role,
     }),
   launch: (id) => post(`/api/tasks/${id}/launch`, {}),
+  cloudAgent: (id) => post(`/api/tasks/${id}/cloud-agent`, {}),
   validate: (id) => post(`/api/tasks/${id}/validate`, { actor: "ci.bot" }),
   deploy: (id) =>
     post(`/api/tasks/${id}/deploy`, {
@@ -146,6 +147,7 @@ let activeId = null;
 let selectedStage = null;
 let stageRoles = {};
 let users = [];
+let cursorAccess = {};
 let currentUser = { id: "ba.rekha", role: "Business Analyst" };
 
 const $ = (id) => document.getElementById(id);
@@ -319,8 +321,16 @@ function renderDetail() {
 
   const lb = $("launchBtn");
   lb.disabled = !ready || codingDone;
-  lb.textContent = codingDone ? "Coding completed ✓" : "Open in Cursor";
+  lb.textContent = codingDone ? "Coding completed ✓" : "Open in Cursor (local)";
   lb.onclick = () => doLaunch(t.id);
+
+  const cb = $("cloudBtn");
+  if (cb) {
+    cb.classList.toggle("hidden", !cursorAccess.cloudEnabled);
+    cb.disabled = !ready || codingDone || !cursorAccess.cloudEnabled;
+    cb.textContent = codingDone ? "Cloud run done ✓" : "☁ Run in Cursor Cloud";
+    cb.onclick = () => doCloudAgent(t.id);
+  }
 
   const vb = $("validateBtn");
   vb.disabled = !codingStarted || codingDone;
@@ -389,6 +399,38 @@ async function doLaunch(id) {
     if (!data.isLocal) {
       if (!promptLocalPathIfNeeded(data)) finishCloudLaunch(data);
     }
+    tasks = await api.list();
+  }
+  renderDetail();
+}
+
+async function doCloudAgent(id) {
+  const cb = $("cloudBtn");
+  cb.disabled = true;
+  cb.textContent = "Starting cloud agent...";
+  const { ok, data } = await api.cloudAgent(id);
+  const box = $("result");
+  box.classList.remove("hidden");
+  $("checksBox").innerHTML = "";
+  $("gitHookBox").innerHTML = "";
+  $("openOptions").innerHTML = "";
+  $("previewWrap").style.display = "block";
+
+  if (!ok) {
+    box.style.borderColor = "var(--danger)";
+    $("resultTitle").textContent = "⛔ Cursor Cloud not available";
+    $("resultMsg").textContent =
+      data.error ||
+      "Set CURSOR_API_KEY on Zeabur (Cursor Team → Service accounts). Gmail password cannot be stored here.";
+    $("resultPreview").textContent = "";
+  } else {
+    box.style.borderColor = "var(--accent-2)";
+    $("resultTitle").textContent = "☁ Cursor Cloud Agent started";
+    $("resultMsg").textContent = data.message;
+    $("openOptions").innerHTML = data.webUrl
+      ? `<div class="open-opt"><a class="btn-link" href="${data.webUrl}" target="_blank" rel="noopener">Open agent in browser →</a><small>No Gmail login needed on this machine — uses Grow24 team API key on the server.</small></div>`
+      : "";
+    $("resultPreview").textContent = "";
     tasks = await api.list();
   }
   renderDetail();
@@ -527,6 +569,20 @@ async function doDeploy(id) {
   renderDetail();
 }
 
+function renderCursorAccessBox() {
+  const el = $("cursorAccessBox");
+  if (!el) return;
+  if (!cursorAccess.teamEmail && !cursorAccess.cloudEnabled) {
+    el.classList.add("hidden");
+    return;
+  }
+  el.classList.remove("hidden");
+  const status = cursorAccess.cloudEnabled
+    ? "☁ Cloud enabled — all users share team API key (no per-machine Gmail login)"
+    : "⚠ Add CURSOR_API_KEY on Zeabur for multi-user cloud access";
+  el.innerHTML = `<span class="cursor-team-label">Cursor team:</span> <b>${cursorAccess.teamEmail || "not set"}</b> · ${status}`;
+}
+
 function setupUserSelector() {
   const sel = $("userSelect");
   sel.innerHTML = "";
@@ -550,9 +606,11 @@ async function init() {
   const meta = await api.meta();
   stageRoles = meta.stageRoles || {};
   users = meta.users || [];
+  cursorAccess = meta.cursorAccess || {};
   if (users.length) currentUser = users[0];
   setupUserSelector();
   setupLocalPathControls();
+  renderCursorAccessBox();
   tasks = await api.list();
   renderList();
 }
