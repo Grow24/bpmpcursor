@@ -21,7 +21,7 @@ const fs = require("fs");
 const path = require("path");
 const { spawn, execSync } = require("child_process");
 const { createZip } = require("./lib/zip");
-const { getCursorAccessConfig, launchCloudAgent } = require("./lib/cursor-access");
+const { getCursorAccessConfig, launchCloudAgent, getCloudAgentRunStatus } = require("./lib/cursor-access");
 
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, "public");
@@ -528,6 +528,14 @@ const server = http.createServer(async (req, res) => {
     );
     saveTasks(tasks);
     return sendJson(res, 200, { ...result, task });
+  }
+
+  // GET cloud agent run status (PBMP polls Cursor API — no browser login needed)
+  r = m(/^\/api\/cursor\/agents\/([^/]+)\/runs\/([^/]+)$/);
+  if (req.method === "GET" && r) {
+    const result = await getCloudAgentRunStatus(r[1], r[2]);
+    if (!result.ok) return sendJson(res, result.status || 502, result);
+    return sendJson(res, 200, result);
   }
 
   // GET download project as ZIP (so a remote user can get ONLY this folder)

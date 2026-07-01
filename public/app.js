@@ -11,6 +11,11 @@ const api = {
     }),
   launch: (id) => post(`/api/tasks/${id}/launch`, {}),
   cloudAgent: (id) => post(`/api/tasks/${id}/cloud-agent`, {}),
+  cloudStatus: (agentId, runId) =>
+    fetch(`/api/cursor/agents/${agentId}/runs/${runId}`).then(async (r) => ({
+      ok: r.ok,
+      data: await r.json(),
+    })),
   validate: (id) => post(`/api/tasks/${id}/validate`, { actor: "ci.bot" }),
   deploy: (id) =>
     post(`/api/tasks/${id}/deploy`, {
@@ -148,6 +153,7 @@ let selectedStage = null;
 let stageRoles = {};
 let users = [];
 let cursorAccess = {};
+let cloudPollTimer = null;
 let currentUser = { id: "ba.rekha", role: "Business Analyst" };
 
 const $ = (id) => document.getElementById(id);
@@ -408,6 +414,7 @@ async function doCloudAgent(id) {
   const cb = $("cloudBtn");
   cb.disabled = true;
   cb.textContent = "Starting cloud agent...";
+  if (cloudPollTimer) clearInterval(cloudPollTimer);
   const { ok, data } = await api.cloudAgent(id);
   const box = $("result");
   box.classList.remove("hidden");
@@ -421,19 +428,60 @@ async function doCloudAgent(id) {
     $("resultTitle").textContent = "⛔ Cursor Cloud not available";
     $("resultMsg").textContent =
       data.error ||
-      "Set CURSOR_API_KEY on Zeabur (Cursor Team → Service accounts). Gmail password cannot be stored here.";
+      "Set CURSOR_API_KEY on Zeabur (Cursor Dashboard → API Keys). Gmail password cannot be stored here.";
     $("resultPreview").textContent = "";
   } else {
     box.style.borderColor = "var(--accent-2)";
     $("resultTitle").textContent = "☁ Cursor Cloud Agent started";
     $("resultMsg").textContent = data.message;
-    $("openOptions").innerHTML = data.webUrl
-      ? `<div class="open-opt"><a class="btn-link" href="${data.webUrl}" target="_blank" rel="noopener">Open agent in browser →</a><small>No Gmail login needed on this machine — uses Grow24 team API key on the server.</small></div>`
-      : "";
+    renderCloudStatusPanel(data);
+    if (data.agentId && data.runId) startCloudStatusPolling(data.agentId, data.runId);
     $("resultPreview").textContent = "";
     tasks = await api.list();
   }
   renderDetail();
+}
+
+function renderCloudStatusPanel(data, statusData) {
+  const el = $("openOptions");
+  const status = statusData?.status || "STARTING";
+  const branch = statusData?.git?.branches?.[0]?.branch;
+  const prUrl = statusData?.git?.branches?.[0]?.prUrl;
+  const resultText = statusData?.result;
+  const terminal = ["FINISHED", "ERROR", "CANCELLED", "EXPIRED"].includes(status);
+
+  el.innerHTML = `
+    <div class="open-opt">
+      <div class="ttl">Live status <span>(no Cursor login needed in PBMP)</span></div>
+      <div class="cloud-status-line"><b>Status:</b> <span id="cloudStatusText">${status}</span></div>
+      ${branch ? `<div class="cloud-status-line"><b>Branch:</b> ${branch}</div>` : ""}
+      ${prUrl ? `<div class="cloud-status-line"><b>PR:</b> <a href="${prUrl}" target="_blank" rel="noopener">${prUrl}</a></div>` : ""}
+      ${resultText ? `<pre class="cloud-result">${resultText}</pre>` : ""}
+      <small id="cloudStatusHint">${
+        terminal
+          ? "Run finished. Use Validate & Complete when code is on GitHub, or pull the branch locally."
+          : "Agent is working on Cursor servers using the Grow24 API key. This page updates automatically."
+      }</small>
+      ${
+        data.webUrl
+          ? `<details style="margin-top:10px"><summary>Optional: open on cursor.com (requires Grow24 team login)</summary><a href="${data.webUrl}" target="_blank" rel="noopener">${data.webUrl}</a></details>`
+          : ""
+      }
+    </div>`;
+}
+
+function startCloudStatusPolling(agentId, runId) {
+  const poll = async () => {
+    const { ok, data } = await api.cloudStatus(agentId, runId);
+    if (!ok) return;
+    renderCloudStatusPanel({ agentId, runId, webUrl: `https://cursor.com/agents/${agentId}` }, data);
+    if (["FINISHED", "ERROR", "CANCELLED", "EXPIRED"].includes(data.status)) {
+      clearInterval(cloudPollTimer);
+      cloudPollTimer = null;
+    }
+  };
+  poll();
+  cloudPollTimer = setInterval(poll, 4000);
 }
 
 // Build the ways to open ONLY this project in Cursor on the user's machine.
